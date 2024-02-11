@@ -1,7 +1,7 @@
 require("dotenv").config();
 
 const Hapi = require("@hapi/hapi");
-//const Jwt = require('@hapi/jwt');
+const Jwt = require('@hapi/jwt');
 
 const Validator = require("./validator");
 const ClientError = require("./exceptions/ClientError");
@@ -19,10 +19,15 @@ const SongsService = require("./services/songs/SongsService");
 const users = require("./api/users");
 const UsersService = require("./services/users/UsersService");
 
+// playlists
+const playlists = require("./api/playlists");
+const PlaylistsService = require("./services/playlists/PlaylistsService");
+
 const init = async () => {
     const albumsService = new AlbumsService();
     const songsService = new SongsService();
-    const userService = new UsersService();
+    const usersService = new UsersService();
+    const playlistsService = new PlaylistsService();
 
     const server = Hapi.server({
         port: process.env.PORT,
@@ -35,11 +40,28 @@ const init = async () => {
     });
 
     // registrasi plugin eksternal
-    // await server.register([
-    //     {
-    //         plugin: Jwt,
-    //     },
-    // ]);
+    await server.register([
+        {
+            plugin: Jwt,
+        },
+    ]);
+
+    // mendefinisikan strategy autentikasi jwt
+    server.auth.strategy('openmusicapp_jwt', 'jwt', {
+        keys: process.env.ACCESS_TOKEN_KEY,
+        verify: {
+            aud: false,
+            iss: false,
+            sub: false,
+            maxAgeSec: process.env.ACCESS_TOKEN_AGE,
+        },
+        validate: (artifacts) => ({
+            isValid: true,
+            credentials: {
+                id: artifacts.decoded.payload.id,
+            },
+        }),
+    });
 
     // registrasi plugin internal
     await server.register([
@@ -60,11 +82,19 @@ const init = async () => {
         {
             plugin: users,
             options: {
-                service: userService,
+                service: usersService,
                 validator: Validator.user,
                 tokenManager: TokenManager,
             }
-        }
+        },
+        {
+            plugin: playlists,
+            options: {
+                service: playlistsService,
+                songsService: songsService,
+                validator: Validator.playlist,
+            },
+        },
     ]);
 
     server.ext('onPreResponse', (request, h) => {

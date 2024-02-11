@@ -6,6 +6,9 @@ const {
     UserPostAuthSchema,
     UserPutAuthSchema,
     UserDeleteAuthSchema,
+    PlaylistPostSchema,
+    PlaylistSongPostSchema,
+    PlaylistSongDeleteSchema,
 } = require("./schema");
 const InvariantError = require("../exceptions/InvariantError");
 
@@ -43,6 +46,20 @@ const Validator = {
             const validationResult = UserDeleteAuthSchema.validate(payload);
             checkValidation(validationResult);
         }
+    },
+    playlist: {
+        validatePlaylistPayload: (payload) => {
+            const validationResult = PlaylistPostSchema.validate(payload);
+            checkValidation(validationResult);
+        },
+        validatePlaylistSongPostPayload: (payload) => {
+            const validationResult = PlaylistSongPostSchema.validate(payload);
+            checkValidation(validationResult);
+        },
+        validatePlaylistSongDeletePayload: (payload) => {
+            const validationResult = PlaylistSongDeleteSchema.validate(payload);
+            checkValidation(validationResult);
+        },
     }
 };
 

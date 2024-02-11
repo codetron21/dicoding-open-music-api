@@ -38,6 +38,18 @@ const UserDeleteAuthSchema = Joi.object({
     refreshToken: Joi.string().required(),
 });
 
+const PlaylistPostSchema = Joi.object({
+    name: Joi.string().required(),
+});
+
+const PlaylistSongPostSchema = Joi.object({
+    songId: Joi.string().required(),
+});
+
+const PlaylistSongDeleteSchema = Joi.object({
+    songId: Joi.string().required(),
+});
+
 module.exports = {
     AlbumPayloadSchema,
     SongPayloadSchema,
@@ -46,4 +58,7 @@ module.exports = {
     UserPostAuthSchema,
     UserPutAuthSchema,
     UserDeleteAuthSchema,
+    PlaylistPostSchema,
+    PlaylistSongPostSchema,
+    PlaylistSongDeleteSchema
 };

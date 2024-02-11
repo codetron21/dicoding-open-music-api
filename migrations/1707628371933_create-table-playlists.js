@@ -12,7 +12,6 @@ exports.up = pgm => {
         },
         owner: {
             type: "VARCHAR(50)",
-            references: 'users',
             notNull: true,
         },
     });
