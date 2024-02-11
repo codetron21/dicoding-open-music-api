@@ -10,7 +10,7 @@ const mapSongDBToModel = {
         title,
         performer,
     }),
-    detail: ({...args, album_id}) => ({
+    detail: ({album_id, ...args}) => ({
         ...args,
         albumId: album_id,
     }),
