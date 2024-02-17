@@ -8,7 +8,12 @@ const path = require('path');
 const Validator = require("./validator");
 const ClientError = require("./exceptions/ClientError");
 const TokenManager = require('./tokenize/TokenManager');
+
+// storage
 const StorageService = require('./services/storage/StorageService');
+
+// cache
+const CacheService = require('./services/redis/CacheService');
 
 // albums
 const albums = require("./api/albums");
@@ -17,6 +22,10 @@ const AlbumsService = require("./services/albums/AlbumsService");
 // albums-cover
 const albumCover = require('./api/uploads/coverAlbum');
 const CoverAlbumService = require("./services/albums/CoverAlbumService");
+
+// albums-likes
+const albumLikes = require('./api/albumLikes');
+const AlbumLikesService = require('./services/albums/AlbumLikesService');
 
 // songs
 const songs = require("./api/songs");
@@ -37,6 +46,8 @@ const init = async () => {
     const playlistsService = new PlaylistsService();
     const storageCoverService = new StorageService(path.resolve(__dirname, 'api/uploads/file/covers'));
     const coverAlbumService = new CoverAlbumService();
+    const albumLikesService = new AlbumLikesService();
+    const cacheLikesService = new CacheService();
 
     const server = Hapi.server({
         port: process.env.PORT,
@@ -115,6 +126,14 @@ const init = async () => {
                 validator: Validator.coverAlbum,
             },
         },
+        {
+            plugin: albumLikes,
+            options: {
+                service: albumLikesService,
+                albumService: albumsService,
+                cacheService: cacheLikesService,
+            },
+        }
     ]);
 
     server.ext('onPreResponse', (request, h) => {
