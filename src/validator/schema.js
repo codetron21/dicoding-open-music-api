@@ -58,6 +58,10 @@ const CoverAlbumSchema = Joi.object({
     cover: Joi.required(),
 }).unknown();
 
+const ExportPlaylistPayloadSchema = Joi.object({
+    targetEmail: Joi.string().email({ tlds: true }).required(),
+});
+
 module.exports = {
     AlbumPayloadSchema,
     SongPayloadSchema,
@@ -70,5 +74,6 @@ module.exports = {
     PlaylistSongPostSchema,
     PlaylistSongDeleteSchema,
     ImageHeadersSchema,
-    CoverAlbumSchema
+    CoverAlbumSchema,
+    ExportPlaylistPayloadSchema
 };

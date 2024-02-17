@@ -39,6 +39,10 @@ const UsersService = require("./services/users/UsersService");
 const playlists = require("./api/playlists");
 const PlaylistsService = require("./services/playlists/PlaylistsService");
 
+// Exports
+const _exports = require('./api/exports');
+const ProducerService = require('./services/rabbitmq/ProducerService');
+
 const init = async () => {
     const albumsService = new AlbumsService();
     const songsService = new SongsService();
@@ -133,7 +137,15 @@ const init = async () => {
                 albumService: albumsService,
                 cacheService: cacheLikesService,
             },
-        }
+        },
+        {
+            plugin: _exports,
+            options: {
+                service: ProducerService,
+                playlistService: playlistsService,
+                validator: Validator.exportPlaylist,
+            },
+        },
     ]);
 
     server.ext('onPreResponse', (request, h) => {
