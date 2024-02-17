@@ -50,6 +50,14 @@ const PlaylistSongDeleteSchema = Joi.object({
     songId: Joi.string().required(),
 });
 
+const ImageHeadersSchema = Joi.object({
+    'content-type': Joi.string().valid('image/apng', 'image/avif', 'image/gif', 'image/jpeg', 'image/png', 'image/webp').required(),
+}).unknown();
+
+const CoverAlbumSchema = Joi.object({
+    cover: Joi.required(),
+}).unknown();
+
 module.exports = {
     AlbumPayloadSchema,
     SongPayloadSchema,
@@ -60,5 +68,7 @@ module.exports = {
     UserDeleteAuthSchema,
     PlaylistPostSchema,
     PlaylistSongPostSchema,
-    PlaylistSongDeleteSchema
+    PlaylistSongDeleteSchema,
+    ImageHeadersSchema,
+    CoverAlbumSchema
 };

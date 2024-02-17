@@ -9,6 +9,8 @@ const {
     PlaylistPostSchema,
     PlaylistSongPostSchema,
     PlaylistSongDeleteSchema,
+    ImageHeadersSchema,
+    CoverAlbumSchema,
 } = require("./schema");
 const InvariantError = require("../exceptions/InvariantError");
 
@@ -59,6 +61,15 @@ const Validator = {
         validatePlaylistSongDeletePayload: (payload) => {
             const validationResult = PlaylistSongDeleteSchema.validate(payload);
             checkValidation(validationResult);
+        },
+    },
+    coverAlbum: {
+        validateHeaderAndPayload: (headers, payload) => {
+            const validationHeaderResult = ImageHeadersSchema.validate(headers);
+            checkValidation(validationHeaderResult);
+
+            const validationPayloadResult = CoverAlbumSchema.validate(payload);
+            checkValidation(validationPayloadResult);
         },
     }
 };

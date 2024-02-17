@@ -2,14 +2,21 @@ require("dotenv").config();
 
 const Hapi = require("@hapi/hapi");
 const Jwt = require('@hapi/jwt');
+const Inert = require('@hapi/inert');
+const path = require('path');
 
 const Validator = require("./validator");
 const ClientError = require("./exceptions/ClientError");
 const TokenManager = require('./tokenize/TokenManager');
+const StorageService = require('./services/storage/StorageService');
 
 // albums
 const albums = require("./api/albums");
 const AlbumsService = require("./services/albums/AlbumsService");
+
+// albums-cover
+const albumCover = require('./api/uploads/coverAlbum');
+const CoverAlbumService = require("./services/albums/CoverAlbumService");
 
 // songs
 const songs = require("./api/songs");
@@ -28,6 +35,8 @@ const init = async () => {
     const songsService = new SongsService();
     const usersService = new UsersService();
     const playlistsService = new PlaylistsService();
+    const storageCoverService = new StorageService(path.resolve(__dirname, 'api/uploads/file/covers'));
+    const coverAlbumService = new CoverAlbumService();
 
     const server = Hapi.server({
         port: process.env.PORT,
@@ -43,6 +52,9 @@ const init = async () => {
     await server.register([
         {
             plugin: Jwt,
+        },
+        {
+            plugin: Inert,
         },
     ]);
 
@@ -95,22 +107,47 @@ const init = async () => {
                 validator: Validator.playlist,
             },
         },
+        {
+            plugin: albumCover,
+            options: {
+                storageService: storageCoverService,
+                coverAlbumService: coverAlbumService,
+                validator: Validator.coverAlbum,
+            },
+        },
     ]);
 
     server.ext('onPreResponse', (request, h) => {
         // mendapatkan konteks response dari request
         const {response} = request;
 
-        // penanganan client error secara internal.
-        if (response instanceof ClientError) {
+        if (response instanceof Error) {
+
+            // penanganan client error secara internal.
+            if (response instanceof ClientError) {
+                const newResponse = h.response({
+                    status: response.status,
+                    message: response.message,
+                });
+                newResponse.code(response.statusCode);
+                return newResponse;
+            }
+
+            // mempertahankan penanganan client error oleh hapi secara native, seperti 404, etc.
+            if (!response.isServer) {
+                return h.continue;
+            }
+
+            // penanganan server error sesuai kebutuhan
             const newResponse = h.response({
-                status: response.status,
-                message: response.message,
+                status: 'error',
+                message: 'terjadi kegagalan pada server kami',
             });
-            newResponse.code(response.statusCode);
+            newResponse.code(500);
             return newResponse;
         }
 
+        // jika bukan error, lanjutkan dengan response sebelumnya (tanpa terintervensi)
         return h.continue;
     });
 
